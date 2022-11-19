@@ -25,12 +25,9 @@ SECRET_KEY = 'django-insecure-fw#j4=art7--%akk%*&1_d2aoy9vv+hn@pf5++1%d$*gc(1efd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
 CORS_ORIGIN_ALLOW_ALL = True
-# CORS_ORIGIN_WHITELIST = (
-#   'http://127.0.0.1:5173',
-# )
+ALLOWED_HOSTS = ["*"]
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:5173']
 
 # Application definition
 

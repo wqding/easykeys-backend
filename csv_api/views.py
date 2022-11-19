@@ -1,32 +1,36 @@
 from django.contrib import messages
-from django.urls import reverse
-from django.shortcuts import render
+from .forms import UploadFileForm
 import logging
 from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.views.decorators.csrf import csrf_exempt
 
-# Create your views here.
+@csrf_exempt 
 def upload_csv(request):
     if "GET" == request.method:
         # return HttpResponse("hello")
-        return Http404()
+        return HttpResponse("failed")
     try:
-        print(request)
+        form = UploadFileForm(request.POST, request.FILES)
         print(request.FILES)
-        csv_file = request.FILES["csv_file"]
-        if not csv_file.name.endswith('.csv'):
-            messages.error(request,'File is not CSV type')
-            return HttpResponseRedirect(reverse("csv_api:upload_csv"))
-        #if file is too large, return
-        if csv_file.multiple_chunks():
-            messages.error(request,"Uploaded file is too big (%.2f MB)." % (csv_file.size/(1000*1000),))
-            return HttpResponseRedirect(reverse("csv_api:upload_csv"))
+        for field in form:
+            print("Field Error:", field.name,  field.errors)
+        if form.is_valid():
+            csv_file = request.FILES['file']
+            if not csv_file.name.endswith('.csv'):
+                messages.error(request,'File is not CSV type')
+                return Http404()
+            #if file is too large, return
+            if csv_file.multiple_chunks():
+                messages.error(request,"Uploaded file is too big (%.2f MB)." % (csv_file.size/(1000*1000),))
+                return Http404()
 
-        file_data = csv_file.read().decode("utf-8")		
+            file_data = csv_file.read().decode("utf-8")		
 
-        lines = file_data.split("\n")
-        print(lines)
+            lines = file_data.split("\n")
+            print(lines)
+        return HttpResponse("success")
     except Exception as e:
         logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
         messages.error(request,"Unable to upload file. "+repr(e))
 
-    return HttpResponseRedirect(reverse("csv_api:upload_csv"))
+        return HttpResponse("failed")
